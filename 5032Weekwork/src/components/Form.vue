@@ -50,11 +50,18 @@
 
             <div class="col-sm-6">
               <label for="gender" class="form-label">Gender</label>
-              <select class="form-select" id="gender" v-model="formData.gender">
+              <select
+                class="form-select"
+                id="gender"
+                @blur="() => validateGender(true)"
+                @input="() => validateGender(false)"
+                v-model="formData.gender"
+              >
                 <option value="male">Male</option>
                 <option value="female">Female</option>
                 <option value="other">Other</option>
               </select>
+              <div v-if="errors.gender" class="text-danger">{{ errors.gender }}</div>
             </div>
           </div>
 
@@ -64,8 +71,12 @@
               class="form-control"
               id="reason"
               rows="3"
+              @blur="() => validateReason(true)"
+              @input="() => validateReason(false)"
               v-model="formData.reason"
-            ></textarea>
+            >
+            </textarea>
+            <div v-if="errors.reason" class="text-danger">{{ errors.reason }}</div>
           </div>
 
           <div class="text-center">
@@ -73,6 +84,15 @@
             <button type="button" class="btn btn-secondary" @click="clearForm">Clear</button>
           </div>
         </form>
+        <div>
+          <DataTable :value="submittedCards" tableStyle="min-width: 50rem">
+            <Column field="username" header="Username"></Column>
+            <Column field="password" header="Password"></Column>
+            <Column field="isAustralian" header="IsAustralian?"></Column>
+            <Column field="gender" header="Gender"></Column>
+            <Column field="reason" header="Reason"></Column>
+          </DataTable>
+        </div>
         <div class="row mt-5" v-if="submittedCards.length">
           <div class="d-flex flex-wrap justify-content-start">
             <div
@@ -122,6 +142,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 
 const formData = ref({
   username: '',
@@ -136,7 +158,14 @@ const submittedCards = ref([])
 const submitForm = () => {
   validateName(true)
   validatePassword(true)
-  if (!errors.value.username && !errors.value.password) {
+  validateGender(true)
+  validateReason(true)
+  if (
+    !errors.value.username &&
+    !errors.value.password &&
+    !errors.value.gender &&
+    !errors.value.reason
+  ) {
     submittedCards.value.push({ ...formData.value })
     clearForm()
   }
@@ -186,6 +215,21 @@ const validatePassword = (blur) => {
     if (blur) errors.value.password = 'Password must contain at least one special character.'
   } else {
     errors.value.password = null
+  }
+}
+const validateGender = (blur) => {
+  if (!formData.value.gender) {
+    if (blur) errors.value.gender = 'Please select a gender'
+  } else {
+    errors.value.gender = null
+  }
+}
+
+const validateReason = (blur) => {
+  if (formData.value.reason.length < 5) {
+    if (blur) errors.value.reason = 'Gender must be length more than 5'
+  } else {
+    errors.value.reason = null
   }
 }
 </script>
